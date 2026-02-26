@@ -2,83 +2,123 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sequencia de Atendimento</title>
+
+<title>Espelho Planilha</title>
 
 <style>
+
 body{
-  font-family: Arial;
-  background:#111;
-  color:white;
-  text-align:center;
+margin:0;
+background:#dcdcdc;
+font-family:Arial;
+}
+
+.container{
+height:100vh;
+overflow:auto;
 }
 
 table{
-  width:80%;
-  margin:auto;
-  font-size:28px;
-  border-collapse:collapse;
+border-collapse:collapse;
 }
 
-td,th{
-  padding:15px;
-  border-bottom:1px solid #444;
+td{
+border:1px solid #222;
+padding:6px;
+white-space:pre-wrap;
 }
 
-.chamado{
-  background:#00aaff;
-  font-weight:bold;
-}
 </style>
+
 </head>
 
 <body>
 
-<h1>Sequencia DE ATENDIMENTO</h1>
-
-<table id="Fila"></table>
+<div class="container">
+<table id="tabela"></table>
+</div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbyblRewaZVZ77kdzHqfJGJ74iSOcwA6i69o1vyhl5hBtWO8PdOZlGVZ2rByQD9b5ZWx/exec";
+const API="https://script.google.com/macros/s/AKfycbxzh31kH7TO_938vumxjTBMziHy3q_-yuR4MGLmHVMWfvWTanRRTs0-F-DZziPG3EUz/exec";
 
-function carregarFila(){
+async function carregar(){
 
-fetch(API)
-.then(r=>r.json())
-.then(data=>{
+const resp = await fetch(API);
+const data = await resp.json();
 
-let tabela=document.getElementById("fila");
+const tabela=document.getElementById("tabela");
 tabela.innerHTML="";
 
-data.forEach((linha,i)=>{
+/* cria linhas */
+data.valores.forEach((linha,i)=>{
 
-if(i==0){
- let head=tabela.insertRow();
- linha.forEach(c=>{
-   let th=document.createElement("th");
-   th.innerText=c;
-   head.appendChild(th);
- });
- return;
+let tr=document.createElement("tr");
+
+linha.forEach((cel,j)=>{
+
+let td=document.createElement("td");
+
+td.innerText=cel;
+
+td.style.background=data.fundos[i][j];
+td.style.color=data.cores[i][j];
+td.style.textAlign=data.alinhamento[i][j];
+td.style.fontWeight=data.fontes[i][j];
+td.style.fontSize=data.tamanhos[i][j]+"px";
+
+td.dataset.row=i+1;
+td.dataset.col=j+1;
+
+tr.appendChild(td);
+
+});
+
+tabela.appendChild(tr);
+
+});
+
+/* largura colunas */
+data.larguras.forEach((w,i)=>{
+document.querySelectorAll(
+`td:nth-child(${i+1})`
+).forEach(td=>{
+td.style.minWidth=w+"px";
+});
+});
+
+/* merges */
+data.merges.forEach(m=>{
+
+let cell=document.querySelector(
+`td[data-row="${m.row}"][data-col="${m.col}"]`
+);
+
+if(cell){
+cell.rowSpan=m.rows;
+cell.colSpan=m.cols;
+
+for(let r=0;r<m.rows;r++){
+for(let c=0;c<m.cols;c++){
+
+if(r==0 && c==0) continue;
+
+let remove =
+document.querySelector(
+`td[data-row="${m.row+r}"][data-col="${m.col+c}"]`
+);
+
+if(remove) remove.remove();
+}
+}
 }
 
-let tr=tabela.insertRow();
-
-if(linha[2]=="Chamado")
- tr.classList.add("chamado");
-
-linha.forEach(c=>{
- tr.insertCell().innerText=c;
-});
-
-});
-
 });
 
 }
 
-carregarFila();
-setInterval(carregarFila,5000);
+carregar();
+setInterval(carregar,5000);
 
 </script>
 
