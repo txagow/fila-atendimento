@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sequencia de Atendimento</title>
+
+<style>
+body{
+  font-family: Arial;
+  background:#111;
+  color:white;
+  text-align:center;
+}
+
+table{
+  width:80%;
+  margin:auto;
+  font-size:28px;
+  border-collapse:collapse;
+}
+
+td,th{
+  padding:15px;
+  border-bottom:1px solid #444;
+}
+
+.chamado{
+  background:#00aaff;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Sequencia DE ATENDIMENTO</h1>
+
+<table id="Fila"></table>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbyblRewaZVZ77kdzHqfJGJ74iSOcwA6i69o1vyhl5hBtWO8PdOZlGVZ2rByQD9b5ZWx/exec";
+
+function carregarFila(){
+
+fetch(API)
+.then(r=>r.json())
+.then(data=>{
+
+let tabela=document.getElementById("fila");
+tabela.innerHTML="";
+
+data.forEach((linha,i)=>{
+
+if(i==0){
+ let head=tabela.insertRow();
+ linha.forEach(c=>{
+   let th=document.createElement("th");
+   th.innerText=c;
+   head.appendChild(th);
+ });
+ return;
+}
+
+let tr=tabela.insertRow();
+
+if(linha[2]=="Chamado")
+ tr.classList.add("chamado");
+
+linha.forEach(c=>{
+ tr.insertCell().innerText=c;
+});
+
+});
+
+});
+
+}
+
+carregarFila();
+setInterval(carregarFila,5000);
+
+</script>
+
+</body>
+</html>
